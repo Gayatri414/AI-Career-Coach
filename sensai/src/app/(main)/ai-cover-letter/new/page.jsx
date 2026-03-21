@@ -18,8 +18,9 @@ export default function NewCoverLetterPage() {
           <h1 className="text-6xl font-bold gradient-title">
             Create Cover Letter
           </h1>
-          <p className="text-muted-foreground">
-            Generate a tailored cover letter for your job application
+          <p className="text-muted-foreground max-w-2xl">
+            Use Generate with AI to draft from your profile and the job post.
+            Open any saved letter to run it again with the same details.
           </p>
         </div>
       </div>

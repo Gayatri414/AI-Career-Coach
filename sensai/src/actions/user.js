@@ -5,9 +5,42 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { generateAIInsights } from "./dashboard";
 
+function getProfileUpdateErrorMessage(error) {
+  const message = error?.message?.toLowerCase?.() || "";
+
+  if (message.includes("unauthorized")) {
+    return "Your session expired. Please sign in again and retry.";
+  }
+
+  if (message.includes("user not found")) {
+    return "Your account profile was not found. Please sign out and sign in again.";
+  }
+
+  if (
+    message.includes("api key") ||
+    message.includes("gemini") ||
+    message.includes("model") ||
+    message.includes("quota") ||
+    message.includes("rate limit")
+  ) {
+    return "AI insights are temporarily unavailable. Please try again in a minute.";
+  }
+
+  if (message.includes("timeout")) {
+    return "Profile setup took too long. Please retry once.";
+  }
+
+  return "Failed to update profile. Please check your details and try again.";
+}
+
 export async function updateUser(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  if (!data?.industry) throw new Error("Please select your industry");
+  if (typeof data?.experience !== "number" || Number.isNaN(data.experience)) {
+    throw new Error("Please provide valid years of experience");
+  }
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
@@ -30,7 +63,7 @@ export async function updateUser(data) {
         if (!industryInsight) {
           const insights = await generateAIInsights(data.industry);
 
-          industryInsight = await db.industryInsight.create({
+          industryInsight = await tx.industryInsight.create({
             data: {
               industry: data.industry,
               ...insights,
@@ -48,22 +81,23 @@ export async function updateUser(data) {
             industry: data.industry,
             experience: data.experience,
             bio: data.bio,
-            skills: data.skills,
+            skills: data.skills ?? [],
           },
         });
 
         return { updatedUser, industryInsight };
       },
       {
-        timeout: 10000, // default: 5000
+        timeout: 30000, // allow AI insight generation before transaction timeout
       }
     );
 
     revalidatePath("/");
-    return result.user;
+    revalidatePath("/dashboard");
+    return { success: true, user: result.updatedUser };
   } catch (error) {
     console.error("Error updating user and industry:", error.message);
-    throw new Error("Failed to update profile");
+    throw new Error(getProfileUpdateErrorMessage(error));
   }
 }
 

@@ -5,7 +5,57 @@ import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const modelNames = ["gemini-2.0-flash", "gemini-1.5-flash"];
+
+async function generateWithFallback(prompt) {
+  let lastError;
+  for (const modelName of modelNames) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
+function parseJsonResponse(text) {
+  const cleanedText = text.replace(/```(?:json)?\n?/gi, "").trim();
+  const start = cleanedText.indexOf("{");
+  const end = cleanedText.lastIndexOf("}");
+  const jsonText =
+    start !== -1 && end > start
+      ? cleanedText.slice(start, end + 1)
+      : cleanedText;
+  return JSON.parse(jsonText);
+}
+
+function getFallbackInsights(industry) {
+  const industryName = (industry || "your").split("-")[0];
+  return {
+    salaryRanges: [
+      { role: "Junior Specialist", min: 35000, max: 55000, median: 45000, location: "Global" },
+      { role: "Mid-Level Specialist", min: 55000, max: 85000, median: 70000, location: "Global" },
+      { role: "Senior Specialist", min: 85000, max: 120000, median: 100000, location: "Global" },
+      { role: "Lead", min: 110000, max: 145000, median: 127000, location: "Global" },
+      { role: "Manager", min: 120000, max: 165000, median: 140000, location: "Global" },
+    ],
+    growthRate: 8.5,
+    demandLevel: "Medium",
+    topSkills: ["Communication", "Problem Solving", "Domain Knowledge", "Data Literacy", "Collaboration"],
+    marketOutlook: "Neutral",
+    keyTrends: [
+      `Increased automation in ${industryName}`,
+      "Higher focus on measurable impact",
+      "Cross-functional collaboration",
+      "Continuous upskilling",
+      "AI-assisted workflows",
+    ],
+    recommendedSkills: ["Strategic Thinking", "Technical Fundamentals", "Project Ownership", "Documentation", "AI Tooling"],
+  };
+}
 
 export const generateAIInsights = async (industry) => {
   const prompt = `
@@ -28,12 +78,13 @@ export const generateAIInsights = async (industry) => {
           Include at least 5 skills and trends.
         `;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response;
-  const text = response.text();
-  const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-
-  return JSON.parse(cleanedText);
+  try {
+    const text = await generateWithFallback(prompt);
+    return parseJsonResponse(text);
+  } catch (error) {
+    console.warn("AI insights unavailable, using fallback insights:", error?.message);
+    return getFallbackInsights(industry);
+  }
 };
 
 export async function getIndustryInsights() {

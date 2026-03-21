@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,7 +42,7 @@ export default function CoverLetterGenerator() {
   // Update content when letter is generated
   useEffect(() => {
     if (generatedLetter) {
-      toast.success("Cover letter generated successfully!");
+      toast.success("Cover letter generated with AI");
       router.push(`/ai-cover-letter/${generatedLetter.id}`);
       reset();
     }
@@ -61,9 +60,13 @@ export default function CoverLetterGenerator() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Job Details</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            Generate with AI
+          </CardTitle>
           <CardDescription>
-            Provide information about the position you&apos;re applying for
+            Add the role and paste the job description. We&apos;ll draft a
+            tailored cover letter from your profile and this posting.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,14 +118,17 @@ export default function CoverLetterGenerator() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={generating}>
+              <Button type="submit" disabled={generating} className="gap-2">
                 {generating ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating…
                   </>
                 ) : (
-                  "Generate Cover Letter"
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate with AI
+                  </>
                 )}
               </Button>
             </div>
