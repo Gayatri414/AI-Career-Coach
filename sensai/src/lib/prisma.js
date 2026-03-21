@@ -13,3 +13,5 @@ if (process.env.NODE_ENV !== "production") {
 // reloads ,a new instance of the prisma client would be created ,potentially loading 
 // to connection issues
 
+// src/lib/prisma.js
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
