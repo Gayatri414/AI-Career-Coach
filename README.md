@@ -16,3 +16,18 @@ Authentication: JWT
 AI Integration: Gemini API
 
 Deployment:ai-career-coach-6lqrdlenm-gayatri-gades-projects.vercel.app
+# Application Screenshots
+
+<img src="./Screenshot 2026-06-20 140326.png" width="800">
+<img src="./Screenshot 2026-06-20 140345.png" width="800">
+<img src="./Screenshot 2026-06-20 140403.png" width="800">
+<img src="./Screenshot 2026-06-20 140421.png" width="800">
+<img src="./Screenshot 2026-06-20 140442.png" width="800">
+<img src="./Screenshot 2026-06-20 140502.png" width="800">
+<img src="./Screenshot 2026-06-20 140527.png" width="800">
+<img src="./Screenshot 2026-06-20 140558.png" width="800">
+<img src="./Screenshot 2026-06-20 140615.png" width="800">
+<img src="./Screenshot 2026-06-20 140645.png" width="800">
+<img src="./Screenshot 2026-06-20 140703.png" width="800">
+<img src="./Screenshot 2026-06-20 140723.png" width="800">
+<img src="./Screenshot 2026-06-20 140742.png" width="800">
